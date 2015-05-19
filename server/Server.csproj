@@ -34,6 +34,7 @@
     <Reference Include="Npgsql">
       <HintPath>lib\Npgsql-2\Npgsql.dll</HintPath>
     </Reference>
+    <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
