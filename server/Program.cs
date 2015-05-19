@@ -11,7 +11,7 @@ namespace Server
     {
         public static ArrayList userInfoList = new ArrayList();
         public static ArrayList messageList = new ArrayList();
-		int test = 11000;
+		int test = 110000;
 
         public static void Main(string[] args)
         {
