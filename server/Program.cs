@@ -20,7 +20,7 @@ namespace Server
         public static void Main(string[] args)
         {
 			
-           // Thread userInfoStartServer_thread = new Thread (new ThreadStart(UserInfoServer));
+           //Thread userInfoStartServer_thread = new Thread (new ThreadStart(UserInfoServer));
             Thread seedServer_thread = new Thread(new ThreadStart(SeedInfoServer));
 			Thread listenServer_thread = new Thread(new ThreadStart(ListenServer));
 

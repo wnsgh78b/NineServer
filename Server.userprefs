@@ -2,7 +2,7 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
   <MonoDevelop.Ide.Workbench ActiveDocument="server/Program.cs">
     <Files>
-      <File FileName="server/Program.cs" Line="57" Column="31" />
+      <File FileName="server/Program.cs" Line="23" Column="14" />
       <File FileName="server/User.cs" Line="9" Column="16" />
     </Files>
   </MonoDevelop.Ide.Workbench>
