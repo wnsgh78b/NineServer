@@ -8,3 +8,10 @@
 /Users/gimjunho/Desktop/NineServer_SAMPLE/server/bin/Debug/Server.exe
 /Users/gimjunho/Desktop/NineServer_SAMPLE/server/obj/x86/Debug/Server.exe
 /Users/gimjunho/Desktop/NineServer_SAMPLE/server/obj/x86/Debug/Server.exe.mdb
+/Users/gimjunho/Desktop/NineServer/server/obj/x86/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.cs
+/Users/gimjunho/Desktop/NineServer/server/obj/x86/Debug/Server.exe
+/Users/gimjunho/Desktop/NineServer/server/obj/x86/Debug/Server.exe.mdb
+/Users/gimjunho/Desktop/NineServer/server/bin/Debug/Npgsql.dll
+/Users/gimjunho/Desktop/NineServer/server/bin/Debug/Mono.Security.dll
+/Users/gimjunho/Desktop/NineServer/server/bin/Debug/Server.exe.mdb
+/Users/gimjunho/Desktop/NineServer/server/bin/Debug/Server.exe
