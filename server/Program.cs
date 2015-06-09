@@ -16,14 +16,14 @@ namespace Server
         public static ArrayList messageList = new ArrayList();
 		static NpgsqlConnection conn = null;
 		static TcpClient client;
+
         public static void Main(string[] args)
         {
 			
-           //Thread userInfoStartServer_thread = new Thread (new ThreadStart(UserInfoServer));
             Thread seedServer_thread = new Thread(new ThreadStart(SeedInfoServer));
 			Thread listenServer_thread = new Thread(new ThreadStart(ListenServer));
 
-			/*try
+			try
 			{
 				conn = new NpgsqlConnection("Server=localhost;Port=8000;User Id=postgres;Password=nine;Database=Nine;");
 				conn.Open();
@@ -33,16 +33,11 @@ namespace Server
 			{
 				Console.WriteLine (e.Message);
 			}
-			//INSERT INTO table_name (column1,column2,column3,...)VALUES (value1,value2,value3,...);
 
-			string sql = "INSERT INTO nine_room (user_id) values ('{0}');";
+			/*string sql = "INSERT INTO nine_room (user_id) values ('{0}');";
 			DataSet ds = new DataSet();
 			ds.Reset();
 			NpgsqlDataAdapter da = new NpgsqlDataAdapter(sql, conn);*/
-
-
-
-
 
 			//da.Fill (ds);
 
@@ -195,8 +190,7 @@ namespace Server
 					{
 						RoomListUpdate (rPacket, client);
 					}
-
-
+						
                     messageList.RemoveAt(m);
                 }
             }
