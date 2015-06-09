@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Data;
-
 using Npgsql;
 
 
@@ -16,7 +15,7 @@ namespace Server
         public static ArrayList userInfoList = new ArrayList();
         public static ArrayList messageList = new ArrayList();
 		static NpgsqlConnection conn = null;
-
+		static TcpClient client;
         public static void Main(string[] args)
         {
 			
@@ -24,7 +23,7 @@ namespace Server
             Thread seedServer_thread = new Thread(new ThreadStart(SeedInfoServer));
 			Thread listenServer_thread = new Thread(new ThreadStart(ListenServer));
 
-			try
+			/*try
 			{
 				conn = new NpgsqlConnection("Server=localhost;Port=8000;User Id=postgres;Password=nine;Database=Nine;");
 				conn.Open();
@@ -39,13 +38,13 @@ namespace Server
 			string sql = "INSERT INTO nine_room (user_id) values ('{0}');";
 			DataSet ds = new DataSet();
 			ds.Reset();
-			NpgsqlDataAdapter da = new NpgsqlDataAdapter(sql, conn);
+			NpgsqlDataAdapter da = new NpgsqlDataAdapter(sql, conn);*/
 
 
 
 
 
-			da.Fill (ds);
+			//da.Fill (ds);
 
 			/*//string sql = "INSERT INTO nine_user VALUES ('1','심선생' ,'{0,1,2,3,4,5,6,7}')";
 			string sql = "select * from nine_user;";
@@ -86,21 +85,46 @@ namespace Server
         public static void ListenServer()
         {
             TcpListener server;
-            TcpClient client;
+           
             NetworkStream stream; 
             StreamReader reader;
 
-            server = new TcpListener(IPAddress.Any, 4926);
+            server = new TcpListener(IPAddress.Any, 8001);
             server.Start();
 
 			Console.WriteLine ("ListenServer 시작");
 
             for (;;)
             {
+				String msg;
+				string[] rPacket = null;
                 client = server.AcceptTcpClient();
                 stream = client.GetStream();
                 reader = new StreamReader(stream);
-                messageList.Add(reader.ReadLine());
+				msg = reader.ReadLine ();
+				rPacket = msg.Split ('_');
+				if (rPacket [0] == "Login") {
+					if (Login (msg.Split ('_'))) {
+						Console.WriteLine ("{0} 로그인 성공", rPacket [1]);
+
+						int check = 0;
+						for (int i = 0; i < userInfoList.Count; i++) {
+							User tmp = (User)userInfoList [i];
+							if (rPacket [1] == tmp.userId) {
+								check = 1;
+								break;
+							}
+						}
+
+						if (check == 0) {
+							userInfoList.Add (new User (rPacket [1], client));
+							Console.WriteLine ("client 와 접속 성공 및 저장 {0}", client.Client.RemoteEndPoint.ToString ());
+						}
+					}
+				} else 
+				{
+					messageList.Add (reader.ReadLine ());
+				}
             }
         }
 
@@ -110,7 +134,8 @@ namespace Server
 
             NetworkStream stream = null;
             StreamWriter writer = null;
-            TcpClient client = null;
+
+			TcpClient client = null;
 
 			Console.WriteLine ("SeedInfoServer 시작");
 
@@ -124,62 +149,53 @@ namespace Server
                     Msg = (string)messageList[m];
                     rPacket = Msg.Split('_');
 
-					if (rPacket [0] == "Login") 
-					{
-						if (Login(rPacket))
+				
+					 
+
+					for (int i = 0; i < userInfoList.Count; i++) 
+					{  
+						user = (User)userInfoList [i];
+						if (user.userId == rPacket [1]) 
 						{
-							Console.WriteLine("{0} 로그인 성공", rPacket[1]);
-
-							int check = 0;
-							for (int i = 0; i < userInfoList.Count; i++)
-							{
-								User tmp = (User)userInfoList[i];
-								if (rPacket[1] == tmp.userId)
-								{
-									check = 1;
-									break;
-								}
-							}
-
-							if (check == 0)
-							{
-								userInfoList.Add(new User(rPacket[1], client));
-								Console.WriteLine("client 와 접속 성공 및 저장 {0}", client.Client.RemoteEndPoint.ToString());
-							}
-						}
-					} 
-					else 
-					{
-						for (int i = 0; i < userInfoList.Count; i++) {  
-							user = (User)userInfoList [i];
-							if (user.userId == rPacket [1]) {
-                           
-								break;
-//                            writer = new StreamWriter(stream);
-//                            writer.WriteLine(Msg);
-//                            writer.Flush();
-							}
-						}
-
-						client = (TcpClient)user.client;
-						stream = client.GetStream ();
-
-						if (rPacket [0] == "AddText") {
-							AddText (rPacket, client);
-						} else if (rPacket [0] == "AddFile") {
-							AddFile (rPacket, stream, client); 
-						} else if (rPacket [0] == "AddProfile") {
-							AddProfile (rPacket, client);
-						} else if (rPacket [0] == "AddProfilePicture") {
-							AddProfilePicture (rPacket, stream, client);
-						} else if (rPacket [0] == "AddRoom") {
-							AddRoom (rPacket, client);
-						} else if (rPacket [0] == "AccessRoom") {
-							AccessRoom (rPacket, client);
-						} else if (rPacket [0] == "RoomListUpdate") {
-							RoomListUpdate (rPacket, client);
+							client = (TcpClient)user.client;
+							stream = client.GetStream ();
+							break;
+//                           writer = new StreamWriter(stream);
+//                           writer.WriteLine(Msg);
+//                           writer.Flush();
 						}
 					}
+							
+
+					if (rPacket [0] == "AddText") 
+					{
+						AddText (rPacket, client);
+					} 
+					else if (rPacket [0] == "AddFile") 
+					{
+						AddFile (rPacket, stream, client); 
+					} 
+					else if (rPacket [0] == "AddProfile") 
+					{
+						AddProfile (rPacket, client);
+					} 
+					else if (rPacket [0] == "AddProfilePicture") 
+					{
+						AddProfilePicture (rPacket, stream, client);
+					} 
+					else if (rPacket [0] == "AddRoom") 
+					{
+						AddRoom (rPacket, client);
+					} 
+					else if (rPacket [0] == "AccessRoom") 
+					{
+						AccessRoom (rPacket, client);
+					} 
+					else if (rPacket [0] == "RoomListUpdate") 
+					{
+						RoomListUpdate (rPacket, client);
+					}
+
 
                     messageList.RemoveAt(m);
                 }
@@ -204,7 +220,9 @@ namespace Server
         static void AddFile (string[] pac,NetworkStream stream,TcpClient client)
         {
             // 여기서 파일이름 유저 방번호등 db로 전
-            int i = 0;
+     
+			int i = 0;
+			Console.WriteLine ("zz");
             byte[] b = new byte[1024]; // 1024 이거 파일크기 받아와서 그 크기로 해줘야함
             FileStream fs = new FileStream(pac[2], FileMode.Create, FileAccess.Write);
 
@@ -213,6 +231,7 @@ namespace Server
                 fs.Write(b, 0, i);
             }
 
+			fs.Close ();
             //여기서 fs를 db로 쏴야함 
         }
 
@@ -282,6 +301,8 @@ namespace Server
 
             writer.WriteLine(packet);
             writer.Flush();
+		
+
         }
     }
 }
