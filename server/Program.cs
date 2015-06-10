@@ -16,7 +16,6 @@ namespace Server
         public static ArrayList messageList = new ArrayList();
 		static NpgsqlConnection conn = null;
 		static TcpClient client;
-
       
         public static void Main(string[] args)
         {
@@ -127,7 +126,8 @@ namespace Server
                                 Console.WriteLine("client 와 접속 성공 및 저장 {0}", client.Client.RemoteEndPoint.ToString());
                                 writer.WriteLine("login suc");
                                 writer.Flush();
-                             
+
+                                messageList.Add("AddRoom_1111_1111_End");
                             }
                         }
                     }
@@ -285,12 +285,51 @@ namespace Server
 
         static void AddRoom(string[] pac,TcpClient client)
         {
-            //db에 방번호 추가요청
-            //그 다음 방번호 알려달라고 요청
-            //그 다음 방만든사람 아이디 를 접속 을 한번에
+            string sql = String.Format("select room_id from nine_room where room_id = '{0}';",pac[2]);
+            NpgsqlDataAdapter da = new NpgsqlDataAdapter(sql, conn);
+            DataTable dt = new DataTable();
+            DataSet ds = new DataSet();
 
-			string sql = "INSERT nine_room SET\n\t\t\tuser_id = '{0}'";
-			NpgsqlDataAdapter da = new NpgsqlDataAdapter(sql, conn);
+            ds.Reset();
+            da.Fill (ds);
+            dt = ds.Tables[0];
+
+            if (dt.Rows.Count == 0)
+            {
+                sql = String.Format("INSERT INTO nine_room VALUES ('{0}','{{1}}');", pac[2], pac[1]);
+                da = new NpgsqlDataAdapter(sql, conn);
+
+                dt = new DataTable();
+                ds = new DataSet();
+
+                ds.Reset();
+
+                da.Fill(ds);
+            }
+            else
+            {
+                sql = String.Format("select user_id from nine_room where room_id = '{0}';", pac[2]);
+                da = new NpgsqlDataAdapter(sql, conn);
+                dt = new DataTable();
+                ds = new DataSet();
+
+                ds.Reset();
+                da.Fill(ds);
+                dt = ds.Tables[0];
+
+                int[] user_ids = (int [])dt.Rows[0].ItemArray.GetValue(0);
+                String temp = "{";
+                for (int i = 0; i < user_ids.Length; i++)
+                {
+                    temp += user_ids[i]+",";
+                }
+                temp += pac[1] + "}";
+               
+                sql = String.Format("UPDATE nine_room Set user_id = '{0}' where room_id = '{1}';", temp, pac[2]);
+                da = new NpgsqlDataAdapter(sql, conn);
+                da.Fill(ds);
+               
+            }
         }
 
         static void AccessRoom(string[] pac,TcpClient client)
@@ -345,7 +384,7 @@ namespace Server
 //AddFile_rlawnsgh78_방번호_사진.jpg_End 보낸 다음 파일전송
 //AddProfile_rlawnsgh78_방번호_프로필내용_End;
 //AddProfilePicture_rlawnsgh78_방번호_End 보낸 다음 파일전송
-//AddRoom_rlawnsgh78_End 방번호가져오기
+//AddRoom_1221414(id)_RoomNumber_End 방번호가져오기
 //AccessRoom_rlawnsgh78_방번호_End
 //Update_rlawnsgh78_방번호_End
 
