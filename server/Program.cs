@@ -17,6 +17,7 @@ namespace Server
 		static NpgsqlConnection conn = null;
 		static TcpClient client;
 
+      
         public static void Main(string[] args)
         {
 			
@@ -35,9 +36,9 @@ namespace Server
 			}
 
 			/*string sql = "INSERT INTO nine_room (user_id) values ('{0}');";
-			DataSet ds = new DataSet();
-			ds.Reset();
-			NpgsqlDataAdapter da = new NpgsqlDataAdapter(sql, conn);*/
+			
+			N
+            pgsqlDataAdapter da = new NpgsqlDataAdapter(sql, conn);*/
 
 			//da.Fill (ds);
 
@@ -80,8 +81,8 @@ namespace Server
         public static void ListenServer()
         {
             TcpListener server;
-           
             NetworkStream stream; 
+            StreamWriter writer;
             StreamReader reader;
 
             server = new TcpListener(IPAddress.Any, 8001);
@@ -89,37 +90,52 @@ namespace Server
 
 			Console.WriteLine ("ListenServer 시작");
 
+           
             for (;;)
             {
-				String msg;
-				string[] rPacket = null;
+                String msg;
+                string[] rPacket = null;
                 client = server.AcceptTcpClient();
                 stream = client.GetStream();
                 reader = new StreamReader(stream);
-				msg = reader.ReadLine ();
-				rPacket = msg.Split ('_');
-				if (rPacket [0] == "Login") {
-					if (Login (msg.Split ('_'))) {
-						Console.WriteLine ("{0} 로그인 성공", rPacket [1]);
+                writer = new StreamWriter(stream);
+                    
+                msg = reader.ReadLine();
+                if (msg != null)
+                {
+                    rPacket = msg.Split('_');
+                    if (rPacket[0] == "Login")
+                    {
+                        if (Login(msg.Split('_')))
+                        {
+                            Console.WriteLine("{0} 로그인 성공", rPacket[1]);
 
-						int check = 0;
-						for (int i = 0; i < userInfoList.Count; i++) {
-							User tmp = (User)userInfoList [i];
-							if (rPacket [1] == tmp.userId) {
-								check = 1;
-								break;
-							}
-						}
+                            int check = 0;
+                            for (int i = 0; i < userInfoList.Count; i++)
+                            {
+                                User tmp = (User)userInfoList[i];
+                                if (rPacket[1] == tmp.userId)
+                                {
+                                    check = 1;
+                                    break;
+                                }
+                            }
 
-						if (check == 0) {
-							userInfoList.Add (new User (rPacket [1], client));
-							Console.WriteLine ("client 와 접속 성공 및 저장 {0}", client.Client.RemoteEndPoint.ToString ());
-						}
-					}
-				} else 
-				{
-					messageList.Add (reader.ReadLine ());
-				}
+                            if (check == 0)
+                            {
+                                userInfoList.Add(new User(rPacket[1], client));
+                                Console.WriteLine("client 와 접속 성공 및 저장 {0}", client.Client.RemoteEndPoint.ToString());
+                                writer.WriteLine("login suc");
+                                writer.Flush();
+                             
+                            }
+                        }
+                    }
+                    else
+                    {
+                        messageList.Add(msg);
+                    }
+                }
             }
         }
 
@@ -144,8 +160,6 @@ namespace Server
                     Msg = (string)messageList[m];
                     rPacket = Msg.Split('_');
 
-				
-					 
 
 					for (int i = 0; i < userInfoList.Count; i++) 
 					{  
@@ -154,10 +168,7 @@ namespace Server
 						{
 							client = (TcpClient)user.client;
 							stream = client.GetStream ();
-							break;
-//                           writer = new StreamWriter(stream);
-//                           writer.WriteLine(Msg);
-//                           writer.Flush();
+							break;                          
 						}
 					}
 							
@@ -202,7 +213,26 @@ namespace Server
             //로그인됨 로그인하는이유 소켓 때문에
 
             //성공하면 true 실패하면 false
+          
+            String sql = String.Format("select user_id from nine_user where user_id = '{0}';", pac[1]);
 
+            NpgsqlDataAdapter da = new NpgsqlDataAdapter(sql, conn);
+            DataTable dt = new DataTable();
+            DataSet ds = new DataSet();
+
+            ds.Reset();
+
+            da.Fill (ds);
+
+            dt = ds.Tables[0];
+
+            if(dt.Rows.Count == 0)
+            {
+                sql = String.Format("INSERT INTO nine_user VALUES ('{0}','{1}')", pac[1],pac[2]);
+                da = new NpgsqlDataAdapter(sql,conn);
+                da.Fill(ds);
+                Console.WriteLine(pac[2]+" reg suc");
+            }
             return true;
         }
 
@@ -216,16 +246,20 @@ namespace Server
             // 여기서 파일이름 유저 방번호등 db로 전
      
 			int i = 0;
-			Console.WriteLine ("zz");
-            byte[] b = new byte[1024]; // 1024 이거 파일크기 받아와서 그 크기로 해줘야함
-            FileStream fs = new FileStream(pac[2], FileMode.Create, FileAccess.Write);
+	
+            Byte[] buf = new Byte[1]; // 1024 이거 파일크기 받아와서 그 크기로 해줘야함
+            FileStream fs = new FileStream(pac[3], FileMode.Create);
 
-            while ((i = stream.Read(b, 0, b.Length)) > 0)
-            {
-                fs.Write(b, 0, i);
-            }
+
+
+           // while ((i = stream.Read(buf, 0, buf.Length)) > 0)
+           // {
+           //     fs.Write(buf, 0, buf.Length);
+           // }
 
 			fs.Close ();
+
+            Console.WriteLine("suc");
             //여기서 fs를 db로 쏴야함 
         }
 
@@ -306,7 +340,7 @@ namespace Server
 // 내용
 // End
 
-//Login_rlawnsgh78_21410000_End
+//Login_123125151(id)_junhokim(name)_End
 //AddText_rlawnsgh78_방번호_안녕_End
 //AddFile_rlawnsgh78_방번호_사진.jpg_End 보낸 다음 파일전송
 //AddProfile_rlawnsgh78_방번호_프로필내용_End;
